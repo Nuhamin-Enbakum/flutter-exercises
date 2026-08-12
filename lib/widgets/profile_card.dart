@@ -102,9 +102,7 @@ class ProfileCard extends StatelessWidget {
             ],
           ),
           Text(
-            'As a product designer with UX experience, I am passionate about creating products that meet the needs of
- users while delivering a beautiful and intuitive experience. I understand that design goes beyond asthetics and must
- be rooted in user needs and behavior.',
+            'As a product designer with UX experience, I am passionate about creating products that meet the needs of users while delivering a beautiful and intiutive experience. I understand that design goes beyond aesthetics and must be in user needs and behavior.',
             style: TextStyle(fontSize: 12),
           ),
           Row(
