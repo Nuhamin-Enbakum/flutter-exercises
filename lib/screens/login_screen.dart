@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import '../widgets/social_login_button.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../widgets/profile_card.dart';
+import './signup_screen.dart';
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -129,8 +133,36 @@ class _LoginScreenState extends State<LoginScreen> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 if(_formKey.currentState!.validate()) {
+                  try{
+                    UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+                      email: _emailController.text.trim(),
+                      password: _passwordController.text,
+
+                    );
+                    DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).get();
+                    Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+                    String firstName = userData['firstName'];
+                    String lastName = userData['lastName'];
+                    String title = userData['title'];
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Scaffold(
+                          body: Center(
+                            child: ProfileCard(name: '$firstName $lastName', title: title),
+                          ),
+                        ),
+                      ),
+                    );
+
+                  } on FirebaseAuthException catch(e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(e.message ?? 'Login failed')),
+                    );
+                  }
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Logging in...')),
                   );
@@ -228,7 +260,18 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(width: 5),
               TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const Scaffold(
+                        body: Center(
+                          child: SignupScreen(),
+                        ),
+                        ),
+                        ),
+                  );
+                },
                 style: TextButton.styleFrom(
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(horizontal: 5),
