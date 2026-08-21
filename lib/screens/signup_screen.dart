@@ -11,6 +11,7 @@ class SignupScreen extends StatefulWidget {
 
 class _SignupScreenState extends State<SignupScreen> {
   bool _obscurePassword = true;
+  bool _isLoading = false;
   final _formKey = GlobalKey<FormState>();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
@@ -78,7 +79,8 @@ class _SignupScreenState extends State<SignupScreen> {
                 controller: _firstNameController,
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  hintText: 'First Name',
+                  labelText: 'First Name',
+                  labelStyle: const TextStyle(color: Colors.grey),
                   filled: true,
                   fillColor: Colors.black,
                   border: OutlineInputBorder(
@@ -98,7 +100,8 @@ class _SignupScreenState extends State<SignupScreen> {
                 controller: _lastNameController,
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  hintText: 'Last Name',
+                  labelText: 'Last Name',
+                  labelStyle: const TextStyle(color: Colors.grey),
                   filled: true,
                   fillColor: Colors.black,
                   border: OutlineInputBorder(
@@ -119,7 +122,8 @@ class _SignupScreenState extends State<SignupScreen> {
                 controller: _emailController,
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  hintText: 'Email',
+                  labelText: 'Email',
+                  labelStyle: const TextStyle(color: Colors.grey),
                   filled: true,
                   fillColor: Colors.black,
                   border: OutlineInputBorder(
@@ -142,7 +146,8 @@ class _SignupScreenState extends State<SignupScreen> {
                 obscureText: _obscurePassword,
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  hintText: 'Password',
+                  labelText: 'Password',
+                  labelStyle: const TextStyle(color: Colors.grey),
                   filled: true,
                   fillColor: Colors.black,
                   border: OutlineInputBorder(
@@ -175,7 +180,8 @@ class _SignupScreenState extends State<SignupScreen> {
                 controller: _titleController,
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  hintText: 'Title/role',
+                  labelText: 'Title/role',
+                  labelStyle: const TextStyle(color: Colors.grey),
                   filled: true,
                   fillColor: Colors.black,
                   border: OutlineInputBorder(
@@ -195,8 +201,11 @@ class _SignupScreenState extends State<SignupScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () async {
+                  onPressed: _isLoading ? null : () async {
                     if(_formKey.currentState!.validate()){
+                      setState(() {
+                      _isLoading = true;
+                    });
                       try {
                         UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
                           email: _emailController.text.trim(),
@@ -218,6 +227,10 @@ class _SignupScreenState extends State<SignupScreen> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text(e.message ?? 'Sign up failed')),
                       );
+                    } finally {
+                      setState(() {
+                        _isLoading = false;
+                      });
                     }
                   }
                   },
@@ -228,7 +241,12 @@ class _SignupScreenState extends State<SignupScreen> {
 
                     ),
                   ),
-                  child: const Text(
+                  child: _isLoading ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
+                  ) 
+                  : const Text(
                     'Sign up',
                     style: TextStyle(
                       color: Colors.black,
@@ -252,7 +270,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   const SizedBox(width: 5),
                   TextButton(
                     onPressed: () {
-                      Navigator.push(
+                      Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
                           builder: (context) => Scaffold(

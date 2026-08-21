@@ -4,11 +4,15 @@ import 'package:flutter/material.dart';
 class ProfileCard extends StatelessWidget {
   final String name;
   final String title;
+  final String email;
+  final VoidCallback onLogout;
 
   const ProfileCard({
     super.key,
     required this.name,
-    required this.title
+    required this.title,
+    required this.email,
+    required this.onLogout,
 
     });
 
@@ -118,7 +122,7 @@ class ProfileCard extends StatelessWidget {
               Icon(Icons.email, size: 16, color: Colors.grey),
               SizedBox(width: 5),
               Text(
-                'lewis@example.com',
+                email,
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
@@ -169,6 +173,10 @@ class ProfileCard extends StatelessWidget {
                   ],
                 ),
             ],
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: onLogout,
           ),
               ],
             ),
