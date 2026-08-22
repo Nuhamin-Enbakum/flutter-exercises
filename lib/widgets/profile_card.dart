@@ -174,9 +174,18 @@ class ProfileCard extends StatelessWidget {
                 ),
             ],
           ),
-          IconButton(
-            icon: const Icon(Icons.logout),
+          TextButton.icon(
             onPressed: onLogout,
+            icon: const Icon(Icons.logout, size: 16, color: Colors.grey),
+            label: const Text(
+              'Logout',
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+
+              ),
+            ),
           ),
               ],
             ),
