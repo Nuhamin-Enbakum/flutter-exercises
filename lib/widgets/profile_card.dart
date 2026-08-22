@@ -2,7 +2,19 @@ import 'package:flutter/material.dart';
 
 
 class ProfileCard extends StatelessWidget {
-  const ProfileCard({super.key});
+  final String name;
+  final String title;
+  final String email;
+  final VoidCallback onLogout;
+
+  const ProfileCard({
+    super.key,
+    required this.name,
+    required this.title,
+    required this.email,
+    required this.onLogout,
+
+    });
 
   @override
   Widget build(BuildContext context) {
@@ -72,17 +84,17 @@ class ProfileCard extends StatelessWidget {
             child: Column(
               spacing: 20,
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children:  [
                 Text(
-                  'Benjamin Lewis',
-                  style: TextStyle(
+                  name,
+                  style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
-                  'Product Designer | Senior User Experience Designer',
-                  style: TextStyle(
+                  title,
+                  style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
                   ),
@@ -110,7 +122,7 @@ class ProfileCard extends StatelessWidget {
               Icon(Icons.email, size: 16, color: Colors.grey),
               SizedBox(width: 5),
               Text(
-                'lewis@example.com',
+                email,
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
@@ -161,6 +173,19 @@ class ProfileCard extends StatelessWidget {
                   ],
                 ),
             ],
+          ),
+          TextButton.icon(
+            onPressed: onLogout,
+            icon: const Icon(Icons.logout, size: 16, color: Colors.grey),
+            label: const Text(
+              'Logout',
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+
+              ),
+            ),
           ),
               ],
             ),

@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import '../widgets/social_login_button.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../widgets/profile_card.dart';
+import './signup_screen.dart';
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -9,6 +13,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
+  bool _isLoading = false;
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -78,7 +83,8 @@ class _LoginScreenState extends State<LoginScreen> {
             controller: _emailController,
             style: const TextStyle(color: Colors.white),
             decoration: InputDecoration(
-              hintText: 'Email or useranme',
+              labelText: 'Email or useranme',
+              labelStyle: const TextStyle(color: Colors.grey),
               filled: true,
               fillColor: Colors.black,
               border: OutlineInputBorder(
@@ -99,7 +105,8 @@ class _LoginScreenState extends State<LoginScreen> {
             obscureText: _obscurePassword,
             style: const TextStyle(color: Colors.white),
             decoration: InputDecoration(
-              hintText: 'Password',
+              labelText: 'Password',
+              labelStyle: const TextStyle(color: Colors.grey),
               filled: true,
               fillColor: Colors.black,
               border: OutlineInputBorder(
@@ -129,11 +136,68 @@ class _LoginScreenState extends State<LoginScreen> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {
+              onPressed: _isLoading ? null : () async {
                 if(_formKey.currentState!.validate()) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Logging in...')),
-                  );
+                  setState(() {
+                    _isLoading = true;
+                  });
+                  try{
+                    UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+                      email: _emailController.text.trim(),
+                      password: _passwordController.text,
+
+                    );
+                    DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).get();
+                    if(!userDoc.exists) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Profile data not found. Please contact support.')),
+                      );
+                      return;
+                    }
+                    Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+                    String firstName = userData['firstName'];
+                    String lastName = userData['lastName'];
+                    String email = userData['email'];
+                    String title = userData['title'];
+
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Scaffold(
+                          body: Center(
+                            child: ProfileCard(
+                              name: '$firstName $lastName', 
+                              title: title, 
+                              email: email,
+                              onLogout: () async {
+                                await FirebaseAuth.instance.signOut();
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => Scaffold(
+                                      body: Center(
+                                        child: const LoginScreen()),
+                                      ),
+                                    ),
+                                );
+                              }
+                              ),
+                          ),
+                        ),
+                      ),
+                    );
+                     
+
+                  } on FirebaseAuthException catch(e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(e.message ?? 'Login failed')),
+                    );
+                  } finally {
+                    setState(() {
+                      _isLoading = false;
+                    });
+                  }
+                 
                 }
 
               },
@@ -144,7 +208,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 
               ),
-              child: const Text(
+              child: _isLoading ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
+              ) 
+              : const Text(
                 'Log in',
                 style: TextStyle(
                   color: Colors.black,
@@ -228,7 +297,18 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(width: 5),
               TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const Scaffold(
+                        body: Center(
+                          child: SignupScreen(),
+                        ),
+                        ),
+                        ),
+                  );
+                },
                 style: TextButton.styleFrom(
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(horizontal: 5),
